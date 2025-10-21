@@ -5,7 +5,7 @@ import { ProductsService } from './products.service';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
   @Get()
-  getProducts(): string {
+  getProducts() {
     return this.productsService.getProducts();
   }
 }
