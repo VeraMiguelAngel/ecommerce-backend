@@ -94,7 +94,35 @@ const products: Product[] = [
 
 @Injectable()
 export class ProductsRepository {
-  getProducts() {
-    return products;
+  getProducts(page: number, limit: number): Product[] {
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    const productList = products.slice(start, end);
+    return productList.map((product) => product);
+  }
+
+  getProduct(id: string) {
+    const foundProduct = products.find((product) => product.id === id);
+    if (!foundProduct) return `No se encontró el producto con id: ${id}`;
+    return foundProduct;
+  }
+
+  addProduct(product: Product) {
+    products.push({ ...product, id: product.name });
+    return product.name;
+  }
+
+  updateProduct(id: string, productNewdata: any): string {
+    const foundProduct = products.find((product) => product.id === id);
+    if (!foundProduct) return `No se encontró el producto con id: ${id}`;
+    Object.assign(foundProduct, productNewdata);
+    return id;
+  }
+
+  deleteProduct(id: string): string {
+    const foundIndex = products.findIndex((product) => product.id === id); //* index || -1
+    if (foundIndex === -1) return `No se encontró el producto con id: ${id}`;
+    products.splice(foundIndex, 1);
+    return id;
   }
 }

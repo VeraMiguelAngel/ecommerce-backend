@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable } from '@nestjs/common';
 
 type User = {
@@ -115,7 +116,41 @@ const users: User[] = [
 
 @Injectable()
 export class UsersRepository {
-  getUsers() {
-    return users;
+  getUsers(page: number, limit: number): Omit<User, 'password'>[] {
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    const userList = users.slice(start, end);
+    return userList.map(({ password, ...userNoPassword }) => userNoPassword);
+  }
+
+  getUser(id: string) {
+    const foundUser = users.find((user) => user.id === id);
+    if (!foundUser) return `No se encontró al usuario con id: ${id}`;
+
+    const { password, ...userNoPassword } = foundUser;
+    return userNoPassword;
+  }
+
+  addUser(user: User) {
+    users.push({ ...user, id: user.email });
+    return user.email;
+  }
+
+  updateUser(id: string, userNewdata: any): string {
+    const foundUser = users.find((user) => user.id === id);
+    if (!foundUser) return `No se encontró al usuario con id: ${id}`;
+    Object.assign(foundUser, userNewdata);
+    return id;
+  }
+
+  deleteUser(id: string): string {
+    const foundIndex = users.findIndex((user) => user.id === id); //* index || -1
+    if (foundIndex === -1) return `No se encontró al usuario con id: ${id}`;
+    users.splice(foundIndex, 1);
+    return id;
+  }
+
+  getUserByEmail(email: string) {
+    return users.find((user) => user.email === email);
   }
 }
