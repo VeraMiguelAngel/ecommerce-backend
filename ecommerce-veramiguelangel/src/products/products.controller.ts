@@ -1,52 +1,52 @@
 import {
   Body,
   Controller,
-  Delete,
+  // Delete,
   Get,
-  Param,
-  Post,
-  Put,
+  // Param,
+  // Post,
+  // Put,
   Query,
-  UseGuards,
+  // UseGuards,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { AuthGuard } from 'src/auth/guards/auth.guard';
+// import { AuthGuard } from 'src/auth/guards/auth.guard';
 
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
   @Get()
-  getProducts(@Query('page') page?: string, @Query('limit') limit?: string) {
-    const pageNum = Number(page);
-    const limitNum = Number(limit);
-    const validPage = !isNaN(pageNum) && pageNum > 0 ? pageNum : 1;
-    const validLimit = !isNaN(limitNum) && limitNum > 0 ? limitNum : 5;
-    return this.productsService.getProducts(
-      validPage.toString(),
-      validLimit.toString(),
-    );
+  getProducts(@Query('page') page: string, @Query('limit') limit: string) {
+    if (page && limit)
+      return this.productsService.getProducts(Number(page), Number(limit));
+    return this.productsService.getProducts(Number(1), Number(5));
   }
 
-  @Get(':id')
-  getProduct(@Param('id') id: string) {
-    return this.productsService.getProduct(id);
+  @Get('seeder')
+  addProducts() {
+    return this.productsService.addProduct();
   }
 
-  @Post()
-  @UseGuards(AuthGuard)
-  addProduct(@Body() product: any) {
-    return this.productsService.addProduct(product);
-  }
+  // @Get(':id')
+  // getProduct(@Param('id') id: string) {
+  //   return this.productsService.getProduct(id);
+  // }
 
-  @Put(':id')
-  @UseGuards(AuthGuard)
-  updateProduct(@Param('id') id: string, @Body() product: any) {
-    return this.productsService.updateProduct(id, product);
-  }
+  // @Post()
+  // @UseGuards(AuthGuard)
+  // addProduct(@Body() product: any) {
+  //   return this.productsService.addProduct(product);
+  // }
 
-  @Delete(':id')
-  @UseGuards(AuthGuard)
-  deleteProduct(@Param('id') id: string) {
-    return this.productsService.deleteProduct(id);
-  }
+  // @Put(':id')
+  // @UseGuards(AuthGuard)
+  // updateProduct(@Param('id') id: string, @Body() product: any) {
+  //   return this.productsService.updateProduct(id, product);
+  // }
+
+  // @Delete(':id')
+  // @UseGuards(AuthGuard)
+  // deleteProduct(@Param('id') id: string) {
+  //   return this.productsService.deleteProduct(id);
+  // }
 }

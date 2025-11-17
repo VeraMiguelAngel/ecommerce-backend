@@ -1,128 +1,79 @@
 import { Injectable } from '@nestjs/common';
-
-type Product = {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  stock: boolean;
-  imgUrl: string;
-};
-
-const products: Product[] = [
-  {
-    id: '1',
-    name: 'Guitarra Criolla',
-    description: 'Acústica de madera',
-    price: 45000,
-    stock: true,
-    imgUrl: 'https://example.com/images/guitarra-criolla.jpg',
-  },
-  {
-    id: '2',
-    name: 'Teclado Yamaha PSR-E373',
-    description: 'Digital de 61 teclas',
-    price: 120000,
-    stock: true,
-    imgUrl: 'https://example.com/images/teclado-yamaha.jpg',
-  },
-  {
-    id: '3',
-    name: 'Batería Alesis Nitro',
-    description: 'Electrónica con pads',
-    price: 280000,
-    stock: false,
-    imgUrl: 'https://example.com/images/bateria-electronica.jpg',
-  },
-  {
-    id: '4',
-    name: 'Violín Stentor 4/4',
-    description: 'Para estudiantes',
-    price: 95000,
-    stock: true,
-    imgUrl: 'https://example.com/images/violin-stentor.jpg',
-  },
-  {
-    id: '5',
-    name: 'Ukelele Mahalo',
-    description: 'Compacto y alegre',
-    price: 25000,
-    stock: true,
-    imgUrl: 'https://example.com/images/ukelele-mahalo.jpg',
-  },
-  {
-    id: '6',
-    name: 'Flauta Yamaha YRS-23',
-    description: 'Soprano escolar',
-    price: 8000,
-    stock: true,
-    imgUrl: 'https://example.com/images/flauta-yamaha.jpg',
-  },
-  {
-    id: '7',
-    name: 'Saxofón Jean Paul AS-400',
-    description: 'Alto profesional',
-    price: 350000,
-    stock: false,
-    imgUrl: 'https://example.com/images/saxofon-jeanpaul.jpg',
-  },
-  {
-    id: '8',
-    name: 'Cajón Meinl',
-    description: 'Percusión acústica',
-    price: 42000,
-    stock: true,
-    imgUrl: 'https://example.com/images/cajon-meinl.jpg',
-  },
-  {
-    id: '9',
-    name: 'Armónica Hohner',
-    description: 'Diatónica en C',
-    price: 15000,
-    stock: true,
-    imgUrl: 'https://example.com/images/armonica-hohner.jpg',
-  },
-  {
-    id: '10',
-    name: 'Pandereta Remo',
-    description: 'Con sonajas metálicas',
-    price: 18000,
-    stock: true,
-    imgUrl: 'https://example.com/images/pandereta-remo.jpg',
-  },
-];
+import { InjectRepository } from '@nestjs/typeorm';
+import { Category } from 'src/entities/Categories/categories.entity';
+import { Product } from 'src/entities/Products/products.entity';
+import { Repository } from 'typeorm';
+import data from '../utils/data.json';
 
 @Injectable()
 export class ProductsRepository {
-  getProducts(page: number, limit: number): Product[] {
+  constructor(
+    @InjectRepository(Product)
+    private producRepository: Repository<Product>,
+    @InjectRepository(Category)
+    private categoriesRepository: Repository<Category>,
+  ) {}
+  async getProducts(page: number, limit: number): Promise<Product[]> {
+    let products = await this.producRepository.find({
+      relations: {
+        category: true,
+      },
+    });
     const start = (page - 1) * limit;
     const end = start + limit;
-    const productList = products.slice(start, end);
-    return productList.map((product) => product);
+    products = products.slice(start, end);
+    return products;
   }
 
-  getProduct(id: string) {
-    const foundProduct = products.find((product) => product.id === id);
-    if (!foundProduct) return `No se encontró el producto con id: ${id}`;
-    return foundProduct;
+  async getProduct(id: string) {
+    const product = await this.producRepository.findOneBy({ id });
+    if (!product) return `No se encontró el producto con id: ${id}`;
+    return product;
   }
 
-  addProduct(product: Product) {
-    products.push({ ...product, id: product.name });
-    return product.name;
+  async addProduct() {
+    //verificamos que exista la categoría
+    const categories = await this.categoriesRepository.find();
+    await Promise.all(
+      data.map(async (element) => {
+        const category = categories.find(
+          (category) => category.name === element.category,
+        );
+        if (!category)
+          throw new Error('La categoría ${element.category} no existe');
+        //creamos un nuevo producto
+        const product = new Product();
+        product.name = element.name;
+        product.description = element.description;
+        product.price = element.price;
+        product.stock = element.stock;
+        product.category = category;
+        //grabamos el nuevo producto
+        await this.producRepository
+          .createQueryBuilder()
+          .insert()
+          .into(Product)
+          .values(product)
+          // si el prodcuto existe, lo actializamos
+          .orUpdate(['description', 'price', 'imgUrl', 'stock'], ['name'])
+          .execute();
+      }),
+    );
+    return 'Producto Agregado';
   }
 
-  updateProduct(id: string, productNewdata: any): string {
-    const foundProduct = products.find((product) => product.id === id);
-    if (!foundProduct) return `No se encontró el producto con id: ${id}`;
-    Object.assign(foundProduct, productNewdata);
-    return id;
+  async updateProduct(id: string, product: Product) {
+    await this.producRepository.update(id, product);
+    const updatedProduct = await this.producRepository.findOneBy({
+      id,
+    });
+    return updatedProduct;
   }
 
-  deleteProduct(id: string): string {
-    const foundIndex = products.findIndex((product) => product.id === id); //* index || -1
-    if (foundIndex === -1) return `No se encontró el producto con id: ${id}`;
-    products.splice(foundIndex, 1);
-    return id;
-  }
+  // deleteProduct(id: string): string {
+  //   const foundIndex = products.findIndex((product) => product.id === id); //* index || -1
+  //   if (foundIndex === -1) return `No se encontró el producto con id: ${id}`;
+  //   products.splice(foundIndex, 1);
+  //   return id;
+  // }
 }

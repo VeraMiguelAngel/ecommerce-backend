@@ -1,29 +1,27 @@
-import { Injectable, Query } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ProductsRepository } from './products.repository';
+import { Product } from 'src/entities/Products/products.entity';
 
 @Injectable()
 export class ProductsService {
   constructor(private readonly productsRepository: ProductsRepository) {}
-  getProducts(@Query('page') page?: string, @Query('limit') limit?: string) {
-    const pageNumber = page ? parseInt(page) : 1;
-    const limitNumber = limit ? parseInt(limit) : 10;
-    return this.productsRepository.getProducts(pageNumber, limitNumber);
+  getProducts(page: number, limit: number) {
+    return this.productsRepository.getProducts(page, limit);
   }
 
   getProduct(id: string) {
     return this.productsRepository.getProduct(id);
   }
 
-  addProduct(product: any) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    return this.productsRepository.addProduct(product);
+  addProduct() {
+    return this.productsRepository.addProduct();
   }
 
-  updateProduct(id: string, productNewData: any) {
-    return this.productsRepository.updateProduct(id, productNewData);
+  updateProduct(id: string, product: Product) {
+    return this.productsRepository.updateProduct(id, product);
   }
 
-  deleteProduct(id: string) {
-    return this.productsRepository.deleteProduct(id);
-  }
+  // deleteProduct(id: string) {
+  //   return this.productsRepository.deleteProduct(id);
+  // }
 }
