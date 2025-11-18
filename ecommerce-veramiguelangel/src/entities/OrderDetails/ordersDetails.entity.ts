@@ -3,7 +3,6 @@ import {
   PrimaryGeneratedColumn,
   Column,
   OneToOne,
-  JoinColumn,
   ManyToMany,
 } from 'typeorm';
 import { Orders } from '../Orders/orders.entity';
@@ -19,7 +18,6 @@ export class OrderDetail {
 
   // Relación 1:1 con Orders
   @OneToOne(() => Orders, (order) => order.orderDetail, { nullable: false })
-  @JoinColumn({ name: 'order:_id' })
   order: Orders;
 
   // Relación N:N con Products
