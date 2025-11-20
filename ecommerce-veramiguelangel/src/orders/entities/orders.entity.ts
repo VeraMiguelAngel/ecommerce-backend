@@ -6,8 +6,8 @@ import {
   OneToOne,
   JoinColumn,
 } from 'typeorm';
-import { Users } from '../Users/user.entity';
-import { OrderDetail } from '../OrderDetails/ordersDetails.entity';
+import { Users } from '../../users/entities/user.entity';
+import { OrderDetail } from '../../OrderDetails/entities/ordersDetails.entity';
 
 @Entity({
   name: 'ORDERS',

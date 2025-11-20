@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UsersRepository } from './users.repository';
+import { Users } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
@@ -12,12 +13,11 @@ export class UsersService {
     return this.userRepository.getUser(id);
   }
 
-  addUser(user: any) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  addUser(user: Users) {
     return this.userRepository.addUser(user);
   }
 
-  updateuser(id: string, userNewdata: any) {
+  updateuser(id: string, userNewdata: Users) {
     return this.userRepository.updateUser(id, userNewdata);
   }
 

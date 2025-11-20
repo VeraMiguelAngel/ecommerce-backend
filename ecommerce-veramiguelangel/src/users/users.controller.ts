@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Post,
   Put,
   Query,
@@ -11,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { CreateUserDto, updateUserDto } from './dto/user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -30,27 +32,27 @@ export class UsersController {
 
   @Get(':id')
   @UseGuards(AuthGuard)
-  getUser(@Param('id') id: string) {
+  getUser(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.getuser(id);
   }
 
   @Post()
-  addUser(@Body() user: { email?: string; name?: string; password?: string }) {
-    if (!user.email) return 'Email es requerido';
-    if (!user.name) return 'Name es requerido';
-    if (!user.password) return 'Password es requerido';
+  addUser(@Body() user: CreateUserDto) {
     return this.usersService.addUser(user);
   }
 
   @Put(':id')
   @UseGuards(AuthGuard)
-  updateUser(@Param('id') id: string, @Body() user: any) {
+  updateUser(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() user: updateUserDto,
+  ) {
     return this.usersService.updateuser(id, user);
   }
 
   @Delete(':id')
   @UseGuards(AuthGuard)
-  deleteUser(@Param('id') id: string) {
+  deleteUser(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.deleteUser(id);
   }
 }

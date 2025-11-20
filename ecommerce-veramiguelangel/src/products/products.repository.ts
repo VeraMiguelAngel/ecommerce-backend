@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Category } from 'src/entities/Categories/categories.entity';
-import { Product } from 'src/entities/Products/products.entity';
+import { Category } from 'src/categories/entities/categories.entity';
+import { Product } from 'src/products/entities/products.entity';
 import { Repository } from 'typeorm';
 import data from '../utils/data.json';
 
@@ -25,13 +25,14 @@ export class ProductsRepository {
     return products;
   }
 
-  async getProduct(id: string) {
+  async getProduct(id: string): Promise<Product> {
     const product = await this.producRepository.findOneBy({ id });
-    if (!product) return `No se encontró el producto con id: ${id}`;
+    if (!product)
+      throw new NotFoundException(`No se encontró el producto con id: ${id}`);
     return product;
   }
 
-  async addProduct() {
+  async addProduct(): Promise<string> {
     //verificamos que exista la categoría
     const categories = await this.categoriesRepository.find();
     await Promise.all(
@@ -40,7 +41,9 @@ export class ProductsRepository {
           (category) => category.name === element.category,
         );
         if (!category)
-          throw new Error('La categoría ${element.category} no existe');
+          throw new NotFoundException(
+            'La categoría ${element.category} no existe',
+          );
         //creamos un nuevo producto
         const product = new Product();
         product.name = element.name;
@@ -62,11 +65,13 @@ export class ProductsRepository {
     return 'Producto Agregado';
   }
 
-  async updateProduct(id: string, product: Product) {
+  async updateProduct(id: string, product: Product): Promise<Product> {
     await this.producRepository.update(id, product);
     const updatedProduct = await this.producRepository.findOneBy({
       id,
     });
+    if (!updatedProduct)
+      throw new NotFoundException(`No se encontró el producto con id: ${id}`);
     return updatedProduct;
   }
 

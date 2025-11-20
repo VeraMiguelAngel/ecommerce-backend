@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { OrderDetail } from 'src/entities/OrderDetails/ordersDetails.entity';
-import { Orders } from 'src/entities/Orders/orders.entity';
-import { Product } from 'src/entities/Products/products.entity';
-import { Users } from 'src/entities/Users/user.entity';
+import { OrderDetail } from 'src/OrderDetails/entities/ordersDetails.entity';
+import { Orders } from 'src/orders/entities/orders.entity';
+import { Product } from 'src/products/entities/products.entity';
+import { Users } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -19,10 +19,11 @@ export class OrdersRepository {
     private productRepository: Repository<Product>,
   ) {}
 
-  async addOrder(userId: string, products: Product[]) {
+  async addOrder(userId: string, products: Product[]): Promise<Orders[]> {
     //verifico que exista el usuario
     const user = await this.usersRepository.findOneBy({ id: userId });
-    if (!user) return `Usuario con id: ${userId} no encontrado`;
+    if (!user)
+      throw new NotFoundException(`Usuario con id: ${userId} no encontrado`);
     //creo la orden:
     const order = new Orders();
     order.date = new Date();
@@ -67,7 +68,7 @@ export class OrdersRepository {
     });
   }
 
-  async getOrder(id: string) {
+  async getOrder(id: string): Promise<Orders> {
     const order = await this.ordersRepository.findOne({
       where: { id },
       relations: {
@@ -77,7 +78,8 @@ export class OrdersRepository {
       },
     });
 
-    if (!order) return `Orden con id: ${id} no encontrada`;
+    if (!order)
+      throw new NotFoundException(`Orden con id: ${id} no encontrada`);
     return order;
   }
 }
