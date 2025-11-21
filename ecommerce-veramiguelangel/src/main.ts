@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { environment } from './config/environment.dev';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -10,10 +11,10 @@ async function bootstrap() {
     }),
   );
 
-  const PORT = Number(process.env.PORT) || 3000;
-  const HOST = process.env.HOST || 'localhost';
-  await app.listen(PORT);
-  console.log(`Servidor escuchando en http://${HOST}:${PORT}`);
+  await app.listen(environment.PORT);
+  console.log(
+    `Servidor escuchando en http://${environment.HOST}:${environment.PORT}`,
+  );
 }
 bootstrap().catch((err) => {
   console.error(err);
