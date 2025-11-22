@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -40,13 +44,21 @@ export class UsersRepository {
     return userNoPassword;
   }
 
-  async addUser(user: Users): Promise<Omit<Users, 'password'>> {
+  async addUser(user: Partial<Users>): Promise<Omit<Users, 'password'>> {
     const newUser = await this.usersRepository.save(user);
-    const { password, ...userNoPassword } = newUser;
+    const dbUser = await this.usersRepository.findOneBy({ id: newUser.id });
+    if (!dbUser)
+      throw new InternalServerErrorException(
+        `No se pudo crear al usuario con id: ${newUser.id}`,
+      );
+    const { password, ...userNoPassword } = dbUser;
     return userNoPassword;
   }
 
-  async updateUser(id: string, user: Users): Promise<Omit<Users, 'password'>> {
+  async updateUser(
+    id: string,
+    user: Partial<Users>,
+  ): Promise<Omit<Users, 'password'>> {
     await this.usersRepository.update(id, user);
     const updateUser = await this.usersRepository.findOneBy({ id });
     if (!updateUser)
@@ -64,12 +76,9 @@ export class UsersRepository {
     return userNoPassword;
   }
 
-  async getUserByEmail(email: string): Promise<Users> {
+  async getUserByEmail(email: string): Promise<Users | null> {
     const user = await this.usersRepository.findOneBy({ email });
-    if (!user)
-      throw new NotFoundException(
-        `No se encontró al usuario con email: ${email}`,
-      );
+
     return user;
   }
 }

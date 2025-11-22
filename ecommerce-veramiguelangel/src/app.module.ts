@@ -18,6 +18,7 @@ import { OrdersModule } from './orders/orders.module';
 import { CategoriesService } from './categories/categories.service';
 import { ProductsService } from './products/products.service';
 import { FileUploadModule } from './file-upload/file-upload.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -36,6 +37,11 @@ import { FileUploadModule } from './file-upload/file-upload.module';
     CategoriesModule,
     OrdersModule,
     FileUploadModule,
+    JwtModule.register({
+      global: true,
+      secret: process.env.JWT_SECRET || 'defaultSecret',
+      signOptions: { expiresIn: '1h' },
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],

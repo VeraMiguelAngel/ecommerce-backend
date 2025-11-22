@@ -5,14 +5,13 @@ import {
   Get,
   Param,
   ParseUUIDPipe,
-  Post,
   Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
-import { CreateUserDto, updateUserDto } from './dto/user.dto';
+import { updateUserDto } from './dto/user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -36,10 +35,10 @@ export class UsersController {
     return this.usersService.getuser(id);
   }
 
-  @Post()
-  addUser(@Body() user: CreateUserDto) {
-    return this.usersService.addUser(user);
-  }
+  // @Post()
+  // addUser(@Body() user: CreateUserDto) {
+  //   return this.usersService.addUser(user);
+  // }
 
   @Put(':id')
   @UseGuards(AuthGuard)
