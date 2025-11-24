@@ -75,10 +75,11 @@ export class ProductsRepository {
     return updatedProduct;
   }
 
-  // deleteProduct(id: string): string {
-  //   const foundIndex = products.findIndex((product) => product.id === id); //* index || -1
-  //   if (foundIndex === -1) return `No se encontró el producto con id: ${id}`;
-  //   products.splice(foundIndex, 1);
-  //   return id;
-  // }
+  async deleteProduct(id: string): Promise<string> {
+    const product = await this.producRepository.findOneBy({ id });
+    if (!product)
+      throw new NotFoundException(`No se encontró el producto con id: ${id}`);
+    await this.producRepository.remove(product);
+    return id;
+  }
 }

@@ -8,6 +8,8 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { Observable } from 'rxjs';
 import { environment } from 'src/config/environment.dev';
+import { Role } from '../enums/roles.enum';
+import JwtUser from 'src/interfaces/Jwt.Inteface';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -15,27 +17,29 @@ export class AuthGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
-    const request: Request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<Request>();
 
-    const token = request.headers.authorization?.split(' ')[1];
-    if (!token)
+    const authheader = request.headers.authorization;
+    if (!authheader)
+      throw new UnauthorizedException(`Se requiere un token de autorización`);
+
+    const [type, token] = authheader.split(' ');
+    if (type !== 'Bearer' || !token)
       throw new UnauthorizedException(`Se requiere un token de autorización`);
 
     try {
-      const secret = environment.JWT_SECRET;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const payLoad = this.jwtService.verify(token, { secret });
+      const payLoad = this.jwtService.verify<JwtUser>(token, {
+        secret: environment.JWT_SECRET,
+      });
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      payLoad.exp = new Date(payLoad.exp * 1000);
-      console.log('PayLoad: ', payLoad);
+      payLoad.roles = payLoad.isAdmin ? [Role.Admin] : [Role.User];
 
-      // request.user = payLoad;
-      // console.log(request.user);
-
+      request.user = payLoad;
       return true;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
+    } catch (error: any) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (error.name === 'TokenExpiredError')
+        throw new UnauthorizedException(`El token ha expirado`);
       throw new UnauthorizedException(`Error al validar el token`);
     }
   }

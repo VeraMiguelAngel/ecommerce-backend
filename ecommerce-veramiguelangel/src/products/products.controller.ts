@@ -1,17 +1,21 @@
 import {
   Body,
   Controller,
-  // Delete,
+  Delete,
   Get,
-  // Param,
+  Param,
+  ParseUUIDPipe,
   // Post,
-  // Put,
+  Put,
   Query,
-  // UseGuards,
+  UseGuards,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
-// import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { Product } from './entities/products.entity';
 
+@ApiTags('Products')
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
@@ -27,26 +31,30 @@ export class ProductsController {
     return this.productsService.addProduct();
   }
 
-  // @Get(':id')
-  // getProduct(@Param('id') id: string) {
-  //   return this.productsService.getProduct(id);
-  // }
+  @Get(':id')
+  getProduct(@Param('id', ParseUUIDPipe) id: string) {
+    return this.productsService.getProduct(id);
+  }
 
   // @Post()
   // @UseGuards(AuthGuard)
-  // addProduct(@Body() product: any) {
+  // addProduct(@Body() product: Product) {
   //   return this.productsService.addProduct(product);
   // }
 
-  // @Put(':id')
-  // @UseGuards(AuthGuard)
-  // updateProduct(@Param('id') id: string, @Body() product: any) {
-  //   return this.productsService.updateProduct(id, product);
-  // }
+  @Put(':id')
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
+  updateProduct(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() product: Product,
+  ) {
+    return this.productsService.updateProduct(id, product);
+  }
 
-  // @Delete(':id')
-  // @UseGuards(AuthGuard)
-  // deleteProduct(@Param('id') id: string) {
-  //   return this.productsService.deleteProduct(id);
-  // }
+  @Delete(':id')
+  @UseGuards(AuthGuard)
+  deleteProduct(@Param('id', ParseUUIDPipe) id: string) {
+    return this.productsService.deleteProduct(id);
+  }
 }

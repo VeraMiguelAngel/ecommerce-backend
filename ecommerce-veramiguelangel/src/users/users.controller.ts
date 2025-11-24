@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   ParseUUIDPipe,
   Put,
@@ -11,14 +12,34 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
-import { updateUserDto } from './dto/user.dto';
+import { UpdateUserDto } from './dto/user.dto';
+import { Roles } from 'src/decorators/roles.decorator';
+import { Role } from 'src/auth/enums/roles.enum';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Users')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @HttpCode(200)
+  @ApiBearerAuth()
   @Get()
-  @UseGuards(AuthGuard)
+  @Roles(Role.Admin)
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: String,
+    description: 'Número de página',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: String,
+    description: 'Cantidad de elementos por página página',
+  })
+  @UseGuards(AuthGuard, RolesGuard)
   getUsers(@Query('page') page?: string, @Query('limit') limit?: string) {
     const pageNum = Number(page);
     const limitNum = Number(limit);
@@ -29,6 +50,8 @@ export class UsersController {
     return this.usersService.getUsers(validPage, validLimit);
   }
 
+  @HttpCode(200)
+  @ApiBearerAuth()
   @Get(':id')
   @UseGuards(AuthGuard)
   getUser(@Param('id', ParseUUIDPipe) id: string) {
@@ -40,15 +63,17 @@ export class UsersController {
   //   return this.usersService.addUser(user);
   // }
 
+  @ApiBearerAuth()
   @Put(':id')
   @UseGuards(AuthGuard)
   updateUser(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() user: updateUserDto,
+    @Body() user: UpdateUserDto,
   ) {
-    return this.usersService.updateuser(id, user);
+    return this.usersService.updateUser(id, user);
   }
 
+  @ApiBearerAuth()
   @Delete(':id')
   @UseGuards(AuthGuard)
   deleteUser(@Param('id', ParseUUIDPipe) id: string) {

@@ -21,7 +21,7 @@ export class ProductsService {
     return this.productsRepository.updateProduct(id, product);
   }
 
-  // deleteProduct(id: string) {
-  //   return this.productsRepository.deleteProduct(id);
-  // }
+  deleteProduct(id: string) {
+    return this.productsRepository.deleteProduct(id);
+  }
 }

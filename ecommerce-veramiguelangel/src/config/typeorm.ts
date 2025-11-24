@@ -1,5 +1,5 @@
 import { registerAs } from '@nestjs/config';
-// import { DataSource, DataSourceOptions } from 'typeorm';
+import { DataSource, DataSourceOptions } from 'typeorm';
 import { environment } from './environment.dev';
 
 const config = {
@@ -20,4 +20,4 @@ const config = {
 export const typeOrmConfig = registerAs('typeorm', () => config);
 // La línea siguiente es necesaria para poder correr las migraciones
 // desde la terminal con el comando: npm run typeorm migration:run
-// export const connectionSource = new DataSource(config as DataSourceOptions);
+export const connectionSource = new DataSource(config as DataSourceOptions);
