@@ -8,7 +8,6 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { Observable } from 'rxjs';
 import { environment } from 'src/config/environment.dev';
-import { Role } from '../enums/roles.enum';
 import JwtUser from 'src/interfaces/Jwt.Inteface';
 
 @Injectable()
@@ -28,19 +27,17 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException(`Se requiere un token de autorización`);
 
     try {
-      const payLoad = this.jwtService.verify<JwtUser>(token, {
+      const payload = this.jwtService.verify<JwtUser>(token, {
         secret: environment.JWT_SECRET,
       });
 
-      payLoad.roles = payLoad.isAdmin ? [Role.Admin] : [Role.User];
-
-      request.user = payLoad;
+      request.user = payload;
       return true;
-    } catch (error: any) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      if (error.name === 'TokenExpiredError')
-        throw new UnauthorizedException(`El token ha expirado`);
-      throw new UnauthorizedException(`Error al validar el token`);
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name === 'TokenExpiredError') {
+        throw new UnauthorizedException('El token ha expirado');
+      }
+      throw new UnauthorizedException('Error al validar el token');
     }
   }
 }

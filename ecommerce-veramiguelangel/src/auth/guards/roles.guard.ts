@@ -24,11 +24,13 @@ export class RolesGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<Request>();
 
     const user = request.user as JwtUser;
+    console.log(user);
 
     const hasRole = () =>
       requireRoles.some((role) => user?.roles?.includes(role));
 
-    const valid = user && hasRole();
+    const valid = user && user.roles && hasRole();
+
     if (!valid)
       throw new UnauthorizedException('Acceso negado, solo para Admin');
     return true;
