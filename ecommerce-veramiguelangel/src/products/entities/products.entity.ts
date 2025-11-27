@@ -75,7 +75,9 @@ export class Product {
     description: 'Detalles de órdenes en las que aparece este producto',
     type: () => [OrderDetail],
   })
-  @ManyToMany(() => OrderDetail, (orderDetail) => orderDetail.products)
+  @ManyToMany(() => OrderDetail, (orderDetail) => orderDetail.products, {
+    cascade: true,
+  })
   @JoinTable({
     name: 'PRODUCTS_ORDERDETAILS', // tabla intermedia
     joinColumn: { name: 'product_id', referencedColumnName: 'id' },

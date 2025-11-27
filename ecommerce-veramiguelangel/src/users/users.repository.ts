@@ -3,10 +3,13 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
+
+export type omitAdmin = Omit<Users, 'isAdmin'>;
 
 @Injectable()
 export class UsersRepository {
@@ -26,7 +29,7 @@ export class UsersRepository {
     return users.map(({ password, ...userNopassword }) => userNopassword);
   }
 
-  async getUser(id: string): Promise<Omit<Users, 'password'>> {
+  async getUser(id: string): Promise<Omit<omitAdmin, 'password'>> {
     const user = await this.usersRepository.findOne({
       where: { id },
       relations: {
@@ -40,7 +43,7 @@ export class UsersRepository {
     if (!user)
       throw new NotFoundException(`No se encontró al usuario con id: ${id}`);
 
-    const { password, ...userNoPassword } = user;
+    const { password, isAdmin, ...userNoPassword } = user;
     return userNoPassword;
   }
 
@@ -58,21 +61,22 @@ export class UsersRepository {
   async updateUser(
     id: string,
     user: Partial<Users>,
-  ): Promise<Omit<Users, 'password'>> {
+  ): Promise<Omit<omitAdmin, 'password'>> {
     await this.usersRepository.update(id, user);
     const updateUser = await this.usersRepository.findOneBy({ id });
     if (!updateUser)
       throw new NotFoundException(`No se encontró al usuario con id: ${id}`);
-    const { password, ...userNoPassword } = updateUser;
+
+    const { password, isAdmin, ...userNoPassword } = updateUser;
     return userNoPassword;
   }
 
-  async deleteUser(id: string): Promise<Omit<Users, 'password'>> {
+  async deleteUser(id: string): Promise<Omit<omitAdmin, 'password'>> {
     const user = await this.usersRepository.findOneBy({ id });
     if (!user)
       throw new NotFoundException(`No se encontró al usuario con id: ${id}`);
     await this.usersRepository.remove(user);
-    const { password, ...userNoPassword } = user;
+    const { password, isAdmin, ...userNoPassword } = user;
     return userNoPassword;
   }
 

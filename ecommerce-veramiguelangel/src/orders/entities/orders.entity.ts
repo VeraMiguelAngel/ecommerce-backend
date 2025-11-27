@@ -28,7 +28,7 @@ export class Orders {
   date: Date;
 
   // Relación N:1 con Users (un usuario puede tener muchos pedidos)
-  @ManyToOne(() => Users, (user) => user.orders)
+  @ManyToOne(() => Users, (user) => user.orders, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: Users;
   // Relación 1:1 con OrderDetails

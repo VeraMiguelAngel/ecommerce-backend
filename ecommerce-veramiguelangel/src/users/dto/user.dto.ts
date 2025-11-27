@@ -99,7 +99,7 @@ export class CreateUserDto {
 
 export class UpdateUserDto extends PartialType(
   PickType(CreateUserDto, [
-    'password',
+    'name',
     'phone',
     'address',
     'city',

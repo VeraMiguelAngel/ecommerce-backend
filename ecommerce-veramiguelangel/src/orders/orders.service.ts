@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { OrdersRepository } from './orders.repository';
-import { Product } from 'src/products/entities/products.entity';
 
 @Injectable()
 export class OrdersService {
   constructor(private ordersRepository: OrdersRepository) {}
 
-  addOrder(userId: string, products: Product[]) {
-    return this.ordersRepository.addOrder(userId, products);
+  addOrder(userId: string, productId: string) {
+    return this.ordersRepository.addOrder(userId, productId);
   }
 
   getOrder(id: string) {

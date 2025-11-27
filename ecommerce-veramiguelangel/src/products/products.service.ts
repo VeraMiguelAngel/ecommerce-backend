@@ -17,6 +17,10 @@ export class ProductsService {
     return this.productsRepository.addProduct();
   }
 
+  createProduct(product: Omit<Product, 'íd'>) {
+    return this.productsRepository.createProduct(product);
+  }
+
   updateProduct(id: string, product: Product) {
     return this.productsRepository.updateProduct(id, product);
   }

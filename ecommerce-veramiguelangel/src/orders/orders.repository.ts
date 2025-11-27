@@ -19,52 +19,45 @@ export class OrdersRepository {
     private productRepository: Repository<Product>,
   ) {}
 
-  async addOrder(userId: string, products: Product[]): Promise<Orders[]> {
-    //verifico que exista el usuario
+  async addOrder(userId: string, productId: string): Promise<Orders[]> {
+    // Verifico que exista el usuario
     const user = await this.usersRepository.findOneBy({ id: userId });
     if (!user)
       throw new NotFoundException(`Usuario con id: ${userId} no encontrado`);
-    //creo la orden:
+
+    // Creo la orden
     const order = new Orders();
     order.date = new Date();
     order.user = user;
-
     const newOrder = await this.ordersRepository.save(order);
 
-    // asocio cada id recibido con su producto:
-    const productsArray = await Promise.all(
-      products.map(async (element) => {
-        const product = await this.productRepository.findOneBy({
-          id: element.id,
-        });
-        if (!product)
-          throw new Error(`Producto con id: ${element.id} no encontrado`);
+    // Busco el producto
+    const product = await this.productRepository.findOneBy({ id: productId });
+    if (!product)
+      throw new NotFoundException(
+        `Producto con id: ${productId} no encontrado`,
+      );
 
-        //actualizo el stock:
-        await this.productRepository.update(
-          { id: element.id },
-          { stock: product.stock - 1 },
-        );
-        return product;
-      }),
-    );
-    // calculo el total:
-    const total = productsArray.reduce(
-      (sum, product: Product) => sum + Number(product.price),
-      0,
+    // Actualizo stock (siempre se descuenta 1)
+    await this.productRepository.update(
+      { id: productId },
+      { stock: product.stock - 1 },
     );
 
-    //creo orderDetail y la iserto en la bdd:
+    // Calculo el total (solo un producto)
+    const total = Number(product.price);
+
+    // Creo orderDetail
     const orderDetail = new OrderDetail();
-    orderDetail.price = Number(Number(total).toFixed(2));
-    orderDetail.products = productsArray;
+    orderDetail.price = Number(total.toFixed(2));
+    orderDetail.products = [product]; // sigue siendo array en la relación
     orderDetail.order = newOrder;
     await this.ordersDeatils.save(orderDetail);
 
-    //envío al cliente la compra con los datos de los productos:
+    // Devuelvo la orden con detalle
     return await this.ordersRepository.find({
       where: { id: order.id },
-      relations: { orderDetail: true },
+      relations: { orderDetail: { products: true } },
     });
   }
 

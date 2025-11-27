@@ -32,6 +32,10 @@ export class ProductsRepository {
     return product;
   }
 
+  async createProduct(product: Omit<Product, 'íd'>) {
+    return await this.producRepository.save(product);
+  }
+
   async addProduct(): Promise<string> {
     //verificamos que exista la categoría
     const categories = await this.categoriesRepository.find();

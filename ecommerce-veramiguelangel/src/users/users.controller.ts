@@ -8,6 +8,8 @@ import {
   ParseUUIDPipe,
   Put,
   Query,
+  Req,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -16,7 +18,17 @@ import { UpdateUserDto } from './dto/user.dto';
 import { Roles } from 'src/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/roles.enum';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
+import JwtUser from 'src/interfaces/Jwt.Inteface';
+
+export interface AuthenticatedRequest extends Request {
+  user: JwtUser;
+}
 
 @ApiTags('Users')
 @Controller('users')
@@ -40,6 +52,7 @@ export class UsersController {
     description: 'Cantidad de elementos por página página',
   })
   @UseGuards(AuthGuard, RolesGuard)
+  @ApiOperation({ summary: 'Obtiene una lista paginada de usuarios' })
   getUsers(@Query('page') page?: string, @Query('limit') limit?: string) {
     const pageNum = Number(page);
     const limitNum = Number(limit);
@@ -54,6 +67,7 @@ export class UsersController {
   @ApiBearerAuth()
   @Get(':id')
   @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Obtiene un usuario por su ID' })
   getUser(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.getuser(id);
   }
@@ -66,16 +80,26 @@ export class UsersController {
   @ApiBearerAuth()
   @Put(':id')
   @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Actualiza un usuario por su ID' })
   updateUser(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() user: UpdateUserDto,
+    @Req() req: AuthenticatedRequest,
   ) {
+    const currentUser: JwtUser = req.user;
+
+    if (currentUser.id !== id && !currentUser.roles.includes(Role.Admin)) {
+      throw new UnauthorizedException(
+        'No puedes modificar los datos de otro usuario',
+      );
+    }
     return this.usersService.updateUser(id, user);
   }
 
   @ApiBearerAuth()
   @Delete(':id')
   @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Elimina un usuario por su ID' })
   deleteUser(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.deleteUser(id);
   }

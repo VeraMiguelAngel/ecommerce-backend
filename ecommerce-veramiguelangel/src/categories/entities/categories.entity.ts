@@ -20,6 +20,8 @@ export class Category {
   @ApiProperty({
     description: 'Lista de productos asociados a esta categoría',
   })
-  @OneToMany(() => Product, (product) => product.category)
+  @OneToMany(() => Product, (product) => product.category, {
+    cascade: ['remove'],
+  })
   products: Product[];
 }
