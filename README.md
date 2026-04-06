@@ -38,20 +38,22 @@ Desarrollo del backend para una aplicación de ecommerce, utilizando **NestJS, P
    git clone https://github.com/VeraMiguelAngel/ecommerce-backend.git
 2. Instalar dependencias:
    
-  npm install
+        npm install
 
 3. Configurar variables de entorno (.env):
 
-DB_HOST, DB_USER, DB_PASS, DB_NAME
+      DB_HOST, DB_USER, DB_PASS, DB_NAME
 
-CLOUDINARY_URL
+      CLOUDINARY_URL
 
-JWT_SECRET
+      JWT_SECRET
 
 4. Ejecutar en modo desarrollo:
-  npm run start:dev
 
-5. Acceder a la documentación Swagger:
+   ```bash
+   npm run start:dev
+
+6. Acceder a la documentación Swagger:
    ```bash
    http://localhost:3000/api
 
