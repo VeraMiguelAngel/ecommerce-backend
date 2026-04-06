@@ -52,7 +52,8 @@ JWT_SECRET
   npm run start:dev
 
 5. Acceder a la documentación Swagger:
-  http://localhost:3000/api
+   ```bash
+   http://localhost:3000/api
 
 ✨ Este proyecto refleja mi especialización en backend dentro del Bootcamp Henry.
 
